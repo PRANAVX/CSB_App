@@ -6,28 +6,25 @@ from functools import wraps
 
 app = Flask(__name__)
 
-# Config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'ragon'
 app.config['MYSQL_DB'] = 'navigus'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-# init MYSQL
 mysql = MySQL(app)
 
-#Articles = Articles()
 
-# Index
+
 @app.route('/')
 def index():
     return render_template('home.html')
 
 @app.route('/meeting/<string:id>/')
 def meeting(id):
-    # Create cursor
+    
     cur = mysql.connection.cursor()
 
-    # Get article
+  
     result = cur.execute("SELECT * FROM articles WHERE id = %s", [id])
 
     meeting = cur.fetchone()
@@ -57,16 +54,12 @@ def register():
         username = form.username.data
         password = sha256_crypt.encrypt(str(form.password.data))
 
-        # Create cursor
         cur = mysql.connection.cursor()
-
-        # Execute query
         cur.execute("INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, %s)", (name, email, username, password))
 
-        # Commit to DB
         mysql.connection.commit()
 
-        # Close connection
+       
         cur.close()
 
         flash('You are now registered and can log in', 'success')
@@ -79,24 +72,24 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Get Form Fields
+        
         username = request.form['username']
         password_candidate = request.form['password']
 
-        # Create cursor
+        
         cur = mysql.connection.cursor()
 
-        # Get user by username
+        
         result = cur.execute("SELECT * FROM users WHERE username = %s", [username])
 
         if result > 0:
-            # Get stored hash
+            
             data = cur.fetchone()
             password = data['password']
 
-            # Compare Passwords
+          
             if sha256_crypt.verify(password_candidate, password):
-                # Passed
+              
                 session['logged_in'] = True
                 session['username'] = username
 
@@ -105,7 +98,7 @@ def login():
             else:
                 error = 'Invalid login'
                 return render_template('login.html', error=error)
-            # Close connection
+        
             cur.close()
         else:
             error = 'Username not found'
@@ -113,7 +106,7 @@ def login():
 
     return render_template('login.html')
 
-# Check if user logged in
+
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -136,12 +129,9 @@ def logout():
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    # Create cursor
+ 
     cur = mysql.connection.cursor()
 
-    # Get articles
-    #result = cur.execute("SELECT * FROM articles")
-    # Show articles only from the user logged in 
     result = cur.execute("SELECT * FROM meetings WHERE user = %s", [session['username']])
 
     meetings = cur.fetchall()
@@ -151,17 +141,16 @@ def dashboard():
     else:
         msg = 'No Meeting Created'
         return render_template('dashboard.html', msg=msg)
-    # Close connection
+ 
     cur.close()
 
-# Article Form Class
 class MeetingForm(Form):
     title = StringField('Title', [validators.Length(min=1, max=200)])
     day = StringField('Day', [validators.Length(min=1, max=40)])
     month = StringField('Month', [validators.Length(min=1, max=20)])
     time = StringField('Time', [validators.Length(min=1, max=10)])
 
-# Add Meeting
+
 @app.route('/add_meetings', methods=['GET', 'POST'])
 @is_logged_in
 def add_meetings():
@@ -172,16 +161,9 @@ def add_meetings():
         month = form.month.data
         time= form.time.data
 
-        # Create Cursor
-        cur = mysql.connection.cursor()
-
-        # Execute
+        cur = mysql.connection.cursor()    
         cur.execute("INSERT INTO meetings(title, Day, month, time, user) VALUES(%s, %s, %s, %s, %s)",(title, day, month, time, session['username']))
-
-        # Commit to DB
         mysql.connection.commit()
-
-        #Close connection
         cur.close()
 
         flash('Meeting Created', 'success')
