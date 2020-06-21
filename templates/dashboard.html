@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <h1>Dashboard <small> Welcome {{session.username}}</small></h1>
+  <a class="btn btn-success" href="/add_meetings"> Create Meeting! </a>
+  <hr>
+  <table class="table table-striped">
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Day</th>
+      <th>Month</th>
+      <th>Time</th>
+      <th>Meeting Organiser</th>
+      <th></th>
+      <th></th>
+    </tr>
+    {% for meeting in meetings %}
+      <tr>
+        <td>{{meeting.id}}</td>
+        <td>{{meeting.title}}</td>
+        <td>{{meeting.day}}</td>
+        <td>{{meeting.month}}</td>
+        <td>{{meeting.time}}</td>
+        <td>{{meeting.user}}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
