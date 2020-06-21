@@ -143,6 +143,8 @@ def dashboard():
         return render_template('dashboard.html', msg=msg)
  
     cur.close()
+    
+
 
 class MeetingForm(Form):
     title = StringField('Title', [validators.Length(min=1, max=200)])
@@ -150,6 +152,15 @@ class MeetingForm(Form):
     month = StringField('Month', [validators.Length(min=1, max=20)])
     time = StringField('Time', [validators.Length(min=1, max=10)])
 
+class JoinForm(Form):
+    organiser = StringField('Organiser', [validators.Length(min=1, max=200)])
+
+# Join Meetings
+@app.route('/join_meetings', methods=['GET', 'POST'])
+@is_logged_in
+def join_meetings():
+    form = JoinForm(request.form)
+    return render_template('join_meetings.html', form=form)    
 
 @app.route('/add_meetings', methods=['GET', 'POST'])
 @is_logged_in
